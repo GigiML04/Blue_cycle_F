@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://unpkg.com/html5-qrcode/html5-qrcode.min.js"></script>
+</head>
+<body>
+    <label>Codice:</label><input type="text" id="input">
+    <br>
+    <label>Count:</label><input type="number" id="count">
+    <button onclick="invia()">Invia</button>
+    <br><br>
+    <button onclick="startQrScanner()">Scansiona QR Code</button>
+    <br><br>
+    <div id="reader" width="600px" style="display:none;"></div>
+
+    <script>
+        console.log("Script html5-qrcode caricato correttamente.");
+
+        const machine = "674dc41cf93fb191482854ad";
+        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NGRjNjliZjkzZmIxOTE0ODI4NTRiOSIsInJvbGUiOiJtYWNoaW5lIn0.ao5jQmK0cTLAcYcVcTdVl_cxT3KBRQStFq49dDxuoQs";
+
+        function startQrScanner() {
+            console.log("Avvio scanner QR.");
+            document.getElementById("reader").style.display = "block";
+            const html5QrCode = new Html5Qrcode("reader");
+            html5QrCode.start(
+                { facingMode: "user" }, // Preferisci la fotocamera frontale
+                {
+                    fps: 10,    // Frame per second per il QR scanner
+                    qrbox: 250  // Dimensione della finestra di scansione
+                },
+                qrCodeMessage => {
+                    document.getElementById("input").value = qrCodeMessage;
+                    console.log("Codice QR scansionato:", qrCodeMessage);
+                    html5QrCode.stop().then(ignore => {
+                        document.getElementById("reader").style.display = "none";
+                        console.log("Codice QR scansionato con successo e scanner fermato.");
+                    }).catch(err => {
+                        console.error("Impossibile fermare lo scanner.", err);
+                    });
+                },
+                errorMessage => {
+                    console.log(`Codice QR non rilevato. Errore: ${errorMessage}`);
+                })
+                .catch(err => {
+                    console.error("Impossibile avviare lo scanner.", err);
+                });
+        }
+
+        function invia() {
+            var user = document.getElementById("input").value;
+            var date = new Date().toISOString().split('T')[0];
+            var collected = document.getElementById("count").value;
+
+            fetch(`https://blue-cycle-zljn.onrender.com/api/v1/users?code=${user}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => response.json())
+            .then(userData => {
+                if (userData.success && userData.data.length > 0) {
+                    var user = userData.data[0].self; // Usa il nome dall'utente
+
+                    var data = {
+                        user: user,
+                        machine: machine,
+                        collected: parseInt(collected)
+                    };
+                    console.log(data);
+                    return fetch('https://blue-cycle-zljn.onrender.com/api/v1/transactions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(data)
+                    });
+                } else {
+                    throw new Error('User not found');
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>
