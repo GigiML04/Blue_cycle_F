@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
     userScoreElement.style.marginTop = '20px';
     document.body.insertBefore(userScoreElement, document.body.firstChild);
 
-    const apiBaseUrl = "http://localhost:3000/api/v1";
+    const apiBaseUrl = "https://blue-cycle-zljn.onrender.com/api/v1";
 
     // Funzione per effettuare richieste API
     const apiRequest = async (url, method = 'GET', body = null) => {

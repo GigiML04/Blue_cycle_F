@@ -4,7 +4,7 @@ const id = localStorage.getItem("Id");
 async function fetchUserData() {
     const token = localStorage.getItem('Token'); // Ottieni il token dal localStorage
     try {
-        const response = await fetch('http://127.0.0.1:3000/api/v1/users/' + id, {
+        const response = await fetch('https://blue-cycle-zljn.onrender.com/api/v1/users/' + id, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -30,7 +30,7 @@ async function fetchDailyCollected() {
    
     
     try {
-        const response = await fetch(`http://127.0.0.1:3000/api/v1/users/${id}/transactions/collected?day=${today.getTime()}`, {
+        const response = await fetch(`https://blue-cycle-zljn.onrender.com/api/v1/users/${id}/transactions/collected?day=${today.getTime()}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -142,21 +142,21 @@ document.getElementById('open-stats-modal').addEventListener('click', async func
 
     try {
         // Bottiglie totali raccolte
-        const totalRes = await fetch(`http://127.0.0.1:3000/api/v1/transactionstions/collected?id=${id}`, {
+        const totalRes = await fetch(`https://blue-cycle-zljn.onrender.com/api/v1/transactionstions/collected?id=${id}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const totalData = await totalRes.json();
         const totalBottles = (totalData && totalData.data != null) ? totalData.data : 0;
 
         // Bottiglie raccolte oggi
-        const todayRes = await fetch(`http://127.0.0.1:3000/api/v1/transactionstions/collected?id=${id}&day=${dayInt}`, {
+        const todayRes = await fetch(`https://blue-cycle-zljn.onrender.com/api/v1/transactionstions/collected?id=${id}&day=${dayInt}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const todayData = await todayRes.json();
         const todayBottles = (todayData && todayData.data != null) ? todayData.data : 0;
 
         // Tutte le transazioni dell'utente
-        const transRes = await fetch(`http://127.0.0.1:3000/api/v1/transactions?id=${id}`, {
+        const transRes = await fetch(`https://blue-cycle-zljn.onrender.com/api/v1/transactions?id=${id}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const transData = await transRes.json();
