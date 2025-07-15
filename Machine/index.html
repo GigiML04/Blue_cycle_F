@@ -1,20 +1,183 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Blue Cycle - Macchina di Raccolta</title>
     <script src="https://unpkg.com/html5-qrcode/html5-qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(90deg, #e3e4e8 0%, #f3f4f6 100%);
+            margin: 0;
+            padding: 0;
+            color: #1e3c72;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 600px;
+            padding: 40px 5%;
+            background-color: rgba(255, 255, 255, 0.85);
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            border: none;
+        }
+
+        h1 {
+            color: #1e3c72;
+            font-size: 2em;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .form-group {
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #1e3c72;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: #fff;
+            color: #1e3c72;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: #1e3c72;
+        }
+
+        button {
+            margin: 10px 5px;
+            background: linear-gradient(90deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: background 0.2s, transform 0.2s;
+            box-shadow: 0 2px 8px rgba(30,60,114,0.08);
+            min-width: 150px;
+        }
+
+        button:hover {
+            background: linear-gradient(90deg, #2a5298 0%, #1e3c72 100%);
+            transform: translateY(-2px) scale(1.04);
+        }
+
+        .qr-button {
+            background: linear-gradient(90deg, #4caf50 0%, #45a049 100%);
+        }
+
+        .qr-button:hover {
+            background: linear-gradient(90deg, #45a049 0%, #4caf50 100%);
+        }
+
+        #reader {
+            margin: 20px auto;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #1e3c72;
+        }
+
+        .feedback {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+            display: none;
+        }
+
+        .feedback.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .feedback.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .feedback.loading {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .buttons-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 20px;
+                padding: 20px;
+            }
+            
+            .buttons-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            button {
+                width: 100%;
+                max-width: 250px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <label>Codice:</label><input type="text" id="input">
-    <br>
-    <label>Count:</label><input type="number" id="count">
-    <button onclick="invia()">Invia</button>
-    <br><br>
-    <button onclick="startQrScanner()">Scansiona QR Code</button>
-    <br><br>
-    <div id="reader" width="600px" style="display:none;"></div>
+    <div class="container">
+        <h1>🔄 Blue Cycle</h1>
+        <p style="margin-bottom: 30px; font-size: 1.1em;">Sistema di Raccolta Intelligente</p>
+        
+        <div class="form-group">
+            <label for="input">Codice Utente:</label>
+            <input type="text" id="input" placeholder="Inserisci il codice utente o scansiona QR">
+        </div>
+        
+        <div class="form-group">
+            <label for="count">Quantità Raccolta:</label>
+            <input type="number" id="count" placeholder="Numero di bottiglie" min="1" max="100">
+        </div>
+
+        <div id="feedback" class="feedback"></div>
+        
+        <div class="buttons-container">
+            <button onclick="startQrScanner()" class="qr-button">📱 Scansiona QR Code</button>
+            <button onclick="invia()">✅ Conferma Raccolta</button>
+        </div>
+        
+        <div id="reader" style="display:none;"></div>
+    </div>
 
     <script>
         console.log("Script html5-qrcode caricato correttamente.");
@@ -22,38 +185,89 @@
         const machine = "674dc41cf93fb191482854ad";
         const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NGRjNjliZjkzZmIxOTE0ODI4NTRiOSIsInJvbGUiOiJtYWNoaW5lIn0.ao5jQmK0cTLAcYcVcTdVl_cxT3KBRQStFq49dDxuoQs";
 
+        // Funzione per mostrare feedback
+        function showFeedback(message, type) {
+            const feedback = document.getElementById('feedback');
+            feedback.textContent = message;
+            feedback.className = `feedback ${type}`;
+            feedback.style.display = 'block';
+            
+            // Nascondi automaticamente dopo 5 secondi (tranne per loading)
+            if (type !== 'loading') {
+                setTimeout(() => {
+                    feedback.style.display = 'none';
+                }, 5000);
+            }
+        }
+
         function startQrScanner() {
             console.log("Avvio scanner QR.");
+            showFeedback("Avvio della fotocamera in corso...", "loading");
+            
             document.getElementById("reader").style.display = "block";
             const html5QrCode = new Html5Qrcode("reader");
+            
             html5QrCode.start(
-                { facingMode: "user" }, // Preferisci la fotocamera frontale
+                { facingMode: "environment" }, // Preferisci la fotocamera posteriore per i QR
                 {
                     fps: 10,    // Frame per second per il QR scanner
-                    qrbox: 250  // Dimensione della finestra di scansione
+                    qrbox: { width: 250, height: 250 }  // Dimensione della finestra di scansione
                 },
                 qrCodeMessage => {
                     document.getElementById("input").value = qrCodeMessage;
                     console.log("Codice QR scansionato:", qrCodeMessage);
+                    showFeedback("✅ Codice QR scansionato con successo!", "success");
+                    
                     html5QrCode.stop().then(ignore => {
                         document.getElementById("reader").style.display = "none";
-                        console.log("Codice QR scansionato con successo e scanner fermato.");
+                        console.log("Scanner fermato.");
                     }).catch(err => {
                         console.error("Impossibile fermare lo scanner.", err);
+                        showFeedback("Errore durante la chiusura dello scanner", "error");
                     });
                 },
                 errorMessage => {
+                    // Non mostrare errori continui per la scansione
                     console.log(`Codice QR non rilevato. Errore: ${errorMessage}`);
                 })
                 .catch(err => {
                     console.error("Impossibile avviare lo scanner.", err);
+                    showFeedback("❌ Impossibile accedere alla fotocamera. Verifica i permessi.", "error");
+                    document.getElementById("reader").style.display = "none";
                 });
         }
 
+        function validateInput() {
+            const userCode = document.getElementById("input").value.trim();
+            const count = document.getElementById("count").value;
+            
+            if (!userCode) {
+                showFeedback("⚠️ Inserisci il codice utente", "error");
+                return false;
+            }
+            
+            if (!count || count <= 0) {
+                showFeedback("⚠️ Inserisci una quantità valida (maggiore di 0)", "error");
+                return false;
+            }
+            
+            if (count > 100) {
+                showFeedback("⚠️ Quantità troppo elevata (massimo 100)", "error");
+                return false;
+            }
+            
+            return true;
+        }
+
         function invia() {
-            var user = document.getElementById("input").value;
-            var date = new Date().toISOString().split('T')[0];
-            var collected = document.getElementById("count").value;
+            if (!validateInput()) {
+                return;
+            }
+            
+            showFeedback("🔄 Elaborazione in corso...", "loading");
+            
+            var user = document.getElementById("input").value.trim();
+            var collected = parseInt(document.getElementById("count").value);
 
             fetch(`https://blue-cycle-zljn.onrender.com/api/v1/users?code=${user}`, {
                 method: 'GET',
@@ -61,37 +275,89 @@
                     'Authorization': `Bearer ${token}`
                 }
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Errore HTTP: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(userData => {
-                if (userData.success && userData.data.length > 0) {
-                    var user = userData.data[0].self; // Usa il nome dall'utente
-
-                    var data = {
-                        user: user,
+                console.log('Risposta utente:', userData);
+                
+                if (userData.success && userData.data && userData.data.length > 0) {
+                    var userId = userData.data[0].self; // Usa l'ID dell'utente
+                    
+                    var transactionData = {
+                        user: userId,
                         machine: machine,
-                        collected: parseInt(collected)
+                        collected: collected
                     };
-                    console.log(data);
+                    
+                    console.log('Dati transazione:', transactionData);
+                    
                     return fetch('https://blue-cycle-zljn.onrender.com/api/v1/transactions', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${token}`
                         },
-                        body: JSON.stringify(data)
+                        body: JSON.stringify(transactionData)
                     });
                 } else {
-                    throw new Error('User not found');
+                    throw new Error('👤 Utente non trovato. Verifica il codice inserito.');
                 }
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Errore nella transazione: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
-                console.log('Success:', data);
+                console.log('Transazione completata:', data);
+                if (data.success) {
+                    showFeedback(`🎉 Raccolta completata! ${collected} bottiglie registrate con successo.`, "success");
+                    // Pulisci i campi dopo successo
+                    document.getElementById("input").value = "";
+                    document.getElementById("count").value = "";
+                } else {
+                    throw new Error(data.message || 'Errore sconosciuto nella transazione');
+                }
             })
             .catch((error) => {
-                console.error('Error:', error);
+                console.error('Errore:', error);
+                let errorMessage = "❌ Errore durante la transazione. ";
+                
+                if (error.message.includes('Utente non trovato')) {
+                    errorMessage += "Verifica il codice utente.";
+                } else if (error.message.includes('HTTP: 401')) {
+                    errorMessage += "Autorizzazione non valida.";
+                } else if (error.message.includes('HTTP: 500')) {
+                    errorMessage += "Errore del server. Riprova più tardi.";
+                } else if (error.message.includes('fetch')) {
+                    errorMessage += "Verifica la connessione internet.";
+                } else {
+                    errorMessage += error.message;
+                }
+                
+                showFeedback(errorMessage, "error");
             });
         }
+
+        // Gestione invio con Enter
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    invia();
+                }
+            });
+            
+            document.getElementById('count').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    invia();
+                }
+            });
+        });
     </script>
 </body>
 </html>
